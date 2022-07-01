@@ -1,0 +1,77 @@
+name: sanoid
+base: core20
+version: '0.1'
+summary: Sanoid is a policy-driven snapshot management tool for ZFS filesystems.
+description: |
+  Sanoid is a policy-driven snapshot management tool for ZFS filesystems.
+
+  This is an unoffical snap not developed by the Sanoid developers!
+
+grade: devel
+confinement: strict
+
+plugs:
+  load-zfs:
+    interface: kernel-module-load
+    modules:
+    - name: zfs
+      load: on-boot
+  dev-zfs:
+    interface: custom-device
+    custom-device: zfs
+
+parts:
+  sanoid:
+    plugin: nil
+    stage-packages:
+      - sanoid
+    prime:
+      - -lib/systemd
+      - -lib/udev
+      - -lib/modules-load.d
+      - -usr/share/doc
+      - -usr/share/man
+      - -usr/share/lintian
+      - -etc/sudoers.d
+    override-build: |
+      snapcraftctl build
+      # Replace absolute paths with snap paths
+      cd ${SNAPCRAFT_PART_INSTALL} && patch -p1 < ${SNAPCRAFT_PROJECT_DIR}/patches/sanoid.patch
+
+apps:
+  sanoid:
+    command: usr/sbin/sanoid
+    plugs:
+      - removable-media
+      - system-observe
+      - mount-observe
+      - kernel-module-observe
+      - dev-zfs
+      - hardware-observe
+    environment:
+      PERL5LIB: "${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/perl/5.30:${SNAP}/usr/share/perl/5.30:${SNAP}/usr/share/perl5"
+
+  sanoid-timer:
+    command: usr/sbin/sanoid
+    plugs:
+      - removable-media
+      - system-observe
+      - mount-observe
+      - kernel-module-observe
+      - dev-zfs
+      - hardware-observe
+    environment:
+      PERL5LIB: "${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/perl/5.30:${SNAP}/usr/share/perl/5.30:${SNAP}/usr/share/perl5"
+    daemon: oneshot
+    timer: "00:00-24:00/96"
+
+
+layout:
+  /etc/zfs/zpool.cache:
+    bind-file: $SNAP_DATA/zpool.cache
+  /etc/sanoid:
+    bind: $SNAP_COMMON
+  /usr/share/sanoid:
+    bind: $SNAP/usr/share/sanoid
+  /var/cache:
+    bind: $SNAP_DATA/cache

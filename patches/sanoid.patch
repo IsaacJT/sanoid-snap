@@ -1,0 +1,64 @@
+--- a/usr/sbin/sanoid	2019-11-11 17:21:37.000000000 +0100
++++ b/usr/sbin/sanoid	2022-07-01 18:09:05.010958577 +0200
+@@ -32,8 +32,8 @@
+
+ my $pscmd = '/bin/ps';
+
+-my $zfs = '/sbin/zfs';
+-my $zpool = '/sbin/zpool';
++my $zfs = "$ENV{'SNAP'}/sbin/zfs";
++my $zpool = "$ENV{'SNAP'}/sbin/zpool";
+
+ my $conf_file = "$args{'configdir'}/sanoid.conf";
+ my $default_conf_file = "/usr/share/sanoid/sanoid.defaults.conf";
+@@ -1365,10 +1365,10 @@
+ sub checklock {
+ 	# take argument $lockname.
+ 	#
+-	# read /var/run/$lockname.lock for a pid on first line and a mutex on second line.
++	# read $ENV{'SNAP_DATA'}/$lockname.lock for a pid on first line and a mutex on second line.
+ 	#
+-	# check process list to see if the pid from /var/run/$lockname.lock is still active with
+-	# the original mutex found in /var/run/$lockname.lock.
++	# check process list to see if the pid from $ENV{'SNAP_DATA'}/$lockname.lock is still active with
++	# the original mutex found in $ENV{'SNAP_DATA'}/$lockname.lock.
+ 	#
+ 	# return:
+ 	#    0 if lock is present and valid for another process
+@@ -1380,7 +1380,7 @@
+ 	#
+
+ 	my $lockname = shift;
+-	my $lockfile = "/var/run/$lockname.lock";
++	my $lockfile = "$ENV{'SNAP_DATA'}/$lockname.lock";
+
+ 	if (! -e $lockfile) {
+ 		# no lockfile
+@@ -1433,11 +1433,11 @@
+ sub removelock {
+ 	# take argument $lockname.
+ 	#
+-	# make sure /var/run/$lockname.lock actually belongs to me (contains my pid and mutex)
++	# make sure $ENV{'SNAP_DATA'}/$lockname.lock actually belongs to me (contains my pid and mutex)
+ 	# and remove it if it does, die if it doesn't.
+
+ 	my $lockname = shift;
+-	my $lockfile = "/var/run/$lockname.lock";
++	my $lockfile = "$ENV{'SNAP_DATA'}/$lockname.lock";
+
+ 	if (checklock($lockname) == 2) {
+ 		unlink $lockfile;
+@@ -1452,11 +1452,11 @@
+ sub writelock {
+ 	# take argument $lockname.
+ 	#
+-	# write a lockfile to /var/run/$lockname.lock with first line
++	# write a lockfile to $ENV{'SNAP_DATA'}/$lockname.lock with first line
+ 	# being my pid and second line being my mutex.
+
+ 	my $lockname = shift;
+-	my $lockfile = "/var/run/$lockname.lock";
++	my $lockfile = "$ENV{'SNAP_DATA'}/$lockname.lock";
+
+ 	# die honorably rather than overwriting a valid, existing lock
+ 	if (! checklock($lockname)) {
