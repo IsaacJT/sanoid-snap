@@ -65,6 +65,17 @@ apps:
     daemon: oneshot
     timer: "00:00-24:00/96"
 
+  syncoid:
+    command: usr/sbin/syncoid
+    plugs:
+      - removable-media
+      - system-observe
+      - mount-observe
+      - kernel-module-observe
+      - dev-zfs
+      - hardware-observe
+    environment:
+      PERL5LIB: "${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/perl/5.30:${SNAP}/usr/share/perl/5.30:${SNAP}/usr/share/perl5"
 
 layout:
   /etc/zfs/zpool.cache:
