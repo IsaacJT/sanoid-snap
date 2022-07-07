@@ -63,7 +63,7 @@ apps:
     environment:
       PERL5LIB: "${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/perl/5.30:${SNAP}/usr/share/perl/5.30:${SNAP}/usr/share/perl5"
     daemon: oneshot
-    timer: "00:00-24:00/96"
+    timer: "00:00-24:00/24"
 
   syncoid:
     command: usr/sbin/syncoid
